@@ -1,42 +1,21 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-# encoding: utf-8
-# вся информация о работе сервиса находится в README.txt
-# и размещена в репозитории
+import modbus_tk
+import modbus_tk.defines as cst
+from modbus_tk import modbus_rtu
+import serial
+import time
 
-from twisted.logger import Logger
+modbusServ = modbus_rtu.RtuServer(serial.Serial('USB0'), baudrate=19200,
+                                  bytesize=8, parity='N', stopbits=1, xonxoff=0)
+print("start")
 
-logging = Logger()
+modbusServ.start()
 
+slave_1 = modbus_tk.modbus.Slave(1)
 
-def init_log(name, config="/etc/kiosk/log.yaml", extra_handlers=[]):
-    """
-    Ф-я инициализации логирования для службы
-    """
-    import os
-    import yaml
-    import logging.config
-    from twisted.logger import globalLogBeginner
-    from twisted.logger import STDLibLogObserver
+slave_1.add_block("1", modbus_tk.defines.HOLDING_REGISTERS, 1, 5)
 
-    # создаем переменную которая покажет имя запускаемого сервиса
-    name = os.path.dirname(os.path.abspath(name)).split('/')[-1]
+aa = (1, 2, 3, 4, 5)  # data in the register
 
-    logging.info("Запускается - %s " % name)
-    try:
-        f = open(config, "r")
-        d = yaml.load(f)
-        dct = dict(version=d['version'], formatters=d['formatters'], handlers={}, loggers={})
-        hds = [name] + extra_handlers
-        for h in hds:
-            ds = d['loggers'][h]
-            dct['loggers'][h] = ds
-            for x in ds['handlers']:
-                dct['handlers'][x] = d['handlers'][x]
-                logging.info('Логирование выводится в - %s' % x)
-        logging.config.dictConfig(dct)
-        f.close()
-    except:
-        logging.error("Не смогли открыть - %s" % config)
-    observers = [STDLibLogObserver(name)]
-    globalLogBeginner.beginLoggingTo(observers)
+while True:
+    slave_1.set_values("1", 1, aa)
+    time.sleep(0.5)
