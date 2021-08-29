@@ -5,7 +5,7 @@ from twisted.internet import reactor
 
 try:
     from pymodbus.client.async import schedulers
-    from pymodbus.client.async.serial
+    # from pymodbus.client.async.serial
     import AsyncModbusSerialClient
     from pymodbus.client.async.twisted
     import ModbusClientProtocol
